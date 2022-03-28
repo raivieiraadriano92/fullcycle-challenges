@@ -1,0 +1,52 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: node
+    container_name: app
+    # entrypoint: bash -c "dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh"
+    command: dockerize -wait tcp://db:3306 -timeout 20s bash -c "npm i && npm run dev"
+    # entrypoint: bash -c "dockerize -wait tcp://db:3306 -timeout 20s ls"
+    networks:
+      - node-network
+    volumes:
+      - ./node:/usr/src/app
+    tty: true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  nginx:
+    build:
+      context: nginx
+    # restart: always
+    ports:
+      - "8080:80"
+    # volumes:
+    # - "./nginx/default.conf:/etc/nginx/conf.d/"
+    # - "./code:/code"
+    # - "./log/nginx:/var/log/nginx"
+    depends_on:
+      - app
+    networks:
+      - node-network
+
+  db:
+    image: mysql:5.7
+    command: --innodb-use-native-aio=0
+    container_name: db
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql-dump:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - node-network
+
+networks:
+  node-network:
+    driver: bridge
