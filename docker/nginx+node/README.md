@@ -1,5 +1,3 @@
-## Open [docker hub](https://hub.docker.com/r/raivieiraadriano92/codeeducation)
-
 ```sh
 docker-compose up -d
 ```
